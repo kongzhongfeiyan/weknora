@@ -355,6 +355,7 @@ func BuildContainer(container *dig.Container) *dig.Container {
 	must(container.Provide(handler.NewModelCredentialsHandler))
 	must(container.Provide(handler.NewWebSearchProviderCredentialsHandler))
 	must(container.Provide(handler.NewDataSourceCredentialsHandler))
+	must(container.Provide(handler.NewHelloWorldHandler))
 	must(container.Provide(handler.NewWebSearchHandler))
 	must(container.Provide(handler.NewWebSearchProviderHandler))
 	must(container.Provide(handler.NewVectorStoreHandler))

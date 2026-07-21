@@ -56,6 +56,8 @@ var noAuthAPI = map[string][]string{
 	// is authenticated by the opaque, single-use `state` parameter instead.
 	"/api/v1/mcp-oauth/callback": {"GET"},
 	"/api/v1/auth/refresh":       {"POST"},
+	// Hello World 测试接口（公开，无需认证）
+	"/api/v1/hello-world": {"GET"},
 	// IM platforms (Feishu, Slack, etc.) commonly issue a HEAD request
 	// before GET to validate Content-Type / Content-Length when rendering
 	// image previews — both verbs must be allowed for image links to work.
