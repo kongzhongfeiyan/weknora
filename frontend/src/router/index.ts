@@ -169,6 +169,12 @@ const router = createRouter({
           component: () => import("../views/organization/OrganizationList.vue"),
           meta: { requiresInit: true, requiresAuth: true }
         },
+        {
+          path: "witcompanies",
+          name: "witCompanyList",
+          component: () => import("../views/company/WitCompanyList.vue"),
+          meta: { requiresInit: true, requiresAuth: true }
+        },
         // Compatibility redirects for /platform/system/* URLs. System
         // administration surfaces live as dedicated sections inside the
         // standard Settings modal; keep stable URLs for bookmarks and
