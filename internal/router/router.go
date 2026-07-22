@@ -70,6 +70,7 @@ type RouterParams struct {
 	MCPServiceHandler            *handler.MCPServiceHandler
 	MCPCredentialsHandler        *handler.MCPCredentialsHandler
 	MCPOAuthHandler              *handler.MCPOAuthHandler
+	HelloWorldHandler           *handler.HelloWorldHandler
 	WebSearchHandler             *handler.WebSearchHandler
 	WebSearchProviderHandler     *handler.WebSearchProviderHandler
 	WebSearchCredentialsHandler  *handler.WebSearchProviderCredentialsHandler
@@ -256,6 +257,7 @@ func NewRouter(params RouterParams) *gin.Engine {
 		RegisterSystemAdminRoutes(v1, params.SystemHandler, params.AuditLogHandler, rbacGuards)
 		RegisterMCPServiceRoutes(v1, params.MCPServiceHandler, params.MCPCredentialsHandler, params.MCPOAuthHandler, rbacGuards)
 		RegisterWebSearchRoutes(v1, params.WebSearchHandler, rbacGuards)
+		RegisterHelloWorldRoutes(v1, params.HelloWorldHandler)
 		RegisterWebSearchProviderRoutes(v1, params.WebSearchProviderHandler, params.WebSearchCredentialsHandler, rbacGuards)
 		RegisterVectorStoreRoutes(v1, params.VectorStoreHandler, rbacGuards)
 		RegisterStorageBackendRoutes(v1, params.StorageBackendHandler, rbacGuards)
@@ -1071,6 +1073,11 @@ func RegisterMCPServiceRoutes(
 		agentTool.POST("/mcp-oauth-resolutions/:pending_id", g.Viewer(), oauthHandler.ResolveMCPOAuth)
 		agentTool.POST("/mcp-oauth-resolutions/:pending_id/cancel", g.Viewer(), oauthHandler.CancelMCPOAuth)
 	}
+}
+
+// RegisterHelloWorldRoutes registers hello world routes
+func RegisterHelloWorldRoutes(r *gin.RouterGroup, helloWorldHandler *handler.HelloWorldHandler) {
+	r.GET("/hello-world", helloWorldHandler.HelloWorld)
 }
 
 // RegisterWebSearchRoutes registers web search routes
