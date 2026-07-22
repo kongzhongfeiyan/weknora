@@ -91,6 +91,7 @@ type RouterParams struct {
 	DataSourceCredentialsHandler *handler.DataSourceCredentialsHandler
 	WeKnoraCloudHandler          *handler.WeKnoraCloudHandler
 	WikiPageHandler              *handler.WikiPageHandler
+	WitCompanyHandler            *handler.WitCompanyHandler
 }
 
 // NewRouter 创建新的路由
@@ -267,6 +268,7 @@ func NewRouter(params RouterParams) *gin.Engine {
 		RegisterDataSourceRoutes(v1, params.DataSourceHandler, params.DataSourceCredentialsHandler, rbacGuards)
 		RegisterWeKnoraCloudRoutes(v1, params.WeKnoraCloudHandler, rbacGuards)
 		RegisterWikiPageRoutes(v1, params.WikiPageHandler, rbacGuards)
+		RegisterWitCompanyRoutes(v1, params.WitCompanyHandler, rbacGuards)
 		RegisterChunkerDebugRoutes(v1, rbacGuards)
 
 		// Fail fast if any declared API-key policy points at a route
@@ -2366,5 +2368,20 @@ func RegisterWikiPageRoutes(r *gin.RouterGroup, wikiHandler *handler.WikiPageHan
 		// Issues
 		wikiRead.GET("/issues", g.Viewer(), g.KBAccessRead("kb_id"), wikiHandler.ListIssues)
 		wiki.PUT("/issues/:issue_id/status", g.OwnedWikiKBOrAdmin(), g.KBAccessWrite("kb_id"), wikiHandler.UpdateIssueStatus)
+	}
+}
+
+// RegisterWitCompanyRoutes registers WIT company CRUD endpoints.
+func RegisterWitCompanyRoutes(r *gin.RouterGroup, h *handler.WitCompanyHandler, g *rbacGuards) {
+	if h == nil {
+		return
+	}
+	group := r.Group("/witcompanies")
+	{
+		group.POST("", g.Admin(), h.CreateWitCompany)
+		group.GET("", g.Viewer(), h.ListWitCompanies)
+		group.GET("/:id", g.Viewer(), h.GetWitCompanyByID)
+		group.PUT("/:id", g.Admin(), h.UpdateWitCompany)
+		group.DELETE("/:id", g.Admin(), h.DeleteWitCompany)
 	}
 }
