@@ -297,6 +297,8 @@ func isValidFileType(fileName string) bool {
 		"jpg", "jpeg", "png", "gif", "bmp", "tiff", "webp",
 		// audio
 		"mp3", "wav", "m4a", "flac", "ogg", "aac",
+		// video
+		"mp4", "avi", "mov", "mkv", "webm", "wmv", "flv", "m4v",
 	}
 
 	for _, t := range supportedTypes {
