@@ -2983,8 +2983,8 @@ func (s *knowledgeService) ProcessDocument(ctx context.Context, t *asynq.Task) e
 		}
 		s.processChunks(ctx, kb, knowledge, passageChunks, passageOpts)
 		return nil
-	} else {
-		// File import
+	} else if convertResult == nil {
+		// File import (skip convert if already handled, e.g. video → ASR)
 		convertResult, err = s.convert(ctx, payload, kb, knowledge, eff, isLastRetry)
 		if err != nil {
 			return err
