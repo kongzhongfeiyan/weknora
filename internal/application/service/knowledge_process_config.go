@@ -79,12 +79,16 @@ func ValidateProcessOverrides(
 
 	hasImage := false
 	hasAudio := false
+	hasVideo := false
 	for _, ft := range fileTypes {
 		if IsImageType(ft) {
 			hasImage = true
 		}
 		if IsAudioType(ft) {
 			hasAudio = true
+		}
+		if IsVideoType(ft) {
+			hasVideo = true
 		}
 	}
 
@@ -99,8 +103,8 @@ func ValidateProcessOverrides(
 		}
 	}
 
-	if hasAudio && !eff.ASRConfig.IsASREnabled() {
-		return werrors.NewBadRequestError("上传音频文件需要设置ASR语音识别模型")
+	if (hasAudio || hasVideo) && !eff.ASRConfig.IsASREnabled() {
+		return werrors.NewBadRequestError("上传音频/视频文件需要设置ASR语音识别模型")
 	}
 
 	if err := types.ValidateEffectiveProcessPromptInstructions(eff); err != nil {

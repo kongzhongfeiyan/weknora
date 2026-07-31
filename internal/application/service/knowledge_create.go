@@ -183,6 +183,13 @@ func (s *knowledgeService) CreateKnowledgeFromFile(ctx context.Context,
 				return nil, werrors.NewBadRequestError("上传音频文件需要设置ASR语音识别模型")
 			}
 		}
+
+		if IsVideoType(getFileType(safeFilename)) {
+			if !kb.ASRConfig.IsASREnabled() {
+				logger.Error(ctx, "ASR model is not configured for video")
+				return nil, werrors.NewBadRequestError("上传视频文件需要设置ASR语音识别模型")
+			}
+		}
 	}
 
 	// Prepare knowledge record

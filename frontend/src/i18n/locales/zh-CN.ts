@@ -460,7 +460,7 @@ export default {
     noValidFilesSelected: "选中的文件均不支持",
     hiddenFilesFiltered: "已过滤 {count} 个隐藏文件",
     imagesFilteredNoVLM: "已过滤 {count} 个图片文件(未启用VLM)",
-    videosFilteredNoVLM: "已跳过 {count} 个视频文件（暂不支持视频上传）",
+    videosFilteredNoVLM: "已跳过 {count} 个视频文件（需要配置 ASR 语音识别模型）",
     audiosFilteredNoASR: "已过滤 {count} 个音频文件(未启用ASR)",
     invalidFilesFiltered: "已过滤 {count} 个不支持的文件",
     unsupportedFileType: "不支持的文件格式",

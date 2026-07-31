@@ -2820,15 +2820,47 @@ func (s *knowledgeService) ProcessDocument(ctx context.Context, t *asynq.Task) e
 		return nil
 	}
 
-	// 视频文件不再支持入库解析
+	// 视频文件处理：复用音频处理流程
 	if payload.FilePath != "" && IsVideoType(payload.FileType) {
-		logger.GetLogger(ctx).WithField("knowledge_id", knowledge.ID).
-			Errorf("processDocument video not supported")
-		knowledge.ParseStatus = "failed"
-		knowledge.ErrorMessage = "暂不支持视频文件"
-		knowledge.UpdatedAt = time.Now()
-		s.repo.UpdateKnowledge(ctx, knowledge)
-		return nil
+		// 检查 ASR 配置
+		if !eff.ASRConfig.IsASREnabled() {
+			logger.GetLogger(ctx).WithField("knowledge_id", knowledge.ID).
+				Errorf("processDocument video without ASR model configured")
+			knowledge.ParseStatus = "failed"
+			knowledge.ErrorMessage = "视频处理需要配置ASR语音识别模型"
+			knowledge.UpdatedAt = time.Now()
+			s.repo.UpdateKnowledge(ctx, knowledge)
+			return nil
+		}
+
+		// 读取视频文件
+		fileReader, err := s.resolveFileServiceForPath(ctx, kb, payload.FilePath).GetFile(ctx, payload.FilePath)
+		if err != nil {
+			s.failStage(ctx, knowledge.ID, types.StageDocReader,
+				werrors.ErrCodeDocReaderParseFailed, "failed to get video file", err)
+			return s.failKnowledge(ctx, knowledge, isLastRetry, "failed to get video file: %v", err)
+		}
+		defer fileReader.Close()
+
+		videoData, err := io.ReadAll(fileReader)
+		if err != nil {
+			s.failStage(ctx, knowledge.ID, types.StageDocReader,
+				werrors.ErrCodeDocReaderParseFailed, "failed to read video file", err)
+			return s.failKnowledge(ctx, knowledge, isLastRetry, "failed to read video file: %v", err)
+		}
+
+		// 构建 ReadResult，标记为音频类型，复用 ASR 处理逻辑
+		convertResult = &types.ReadResult{
+			IsAudio:   true,
+			AudioData: videoData,
+			Metadata: map[string]string{
+				"source_type": "video",
+				"source_file": knowledge.FileName,
+			},
+		}
+
+		logger.Infof(ctx, "[Video] Video file loaded, size=%d bytes, will be processed by ASR", len(videoData))
+		// 继续执行后续的 ASR 转写流程（与音频处理相同）
 	}
 
 	// New pipeline: convert -> store images -> chunk -> vectorize -> multimodal tasks

@@ -461,7 +461,7 @@ export default {
     noValidFilesSelected: 'All selected files are unsupported',
     hiddenFilesFiltered: 'Filtered {count} hidden files',
     imagesFilteredNoVLM: 'Filtered {count} image files (VLM not enabled)',
-    videosFilteredNoVLM: 'Skipped {count} video file(s) (video upload is not supported)',
+    videosFilteredNoVLM: 'Skipped {count} video file(s) (ASR model configuration required)',
     audiosFilteredNoASR: 'Filtered {count} audio files (ASR not enabled)',
     invalidFilesFiltered: 'Filtered {count} unsupported files',
     unsupportedFileType: 'Unsupported file type',
