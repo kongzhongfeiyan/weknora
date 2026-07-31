@@ -2820,6 +2820,10 @@ func (s *knowledgeService) ProcessDocument(ctx context.Context, t *asynq.Task) e
 		return nil
 	}
 
+	// New pipeline: convert -> store images -> chunk -> vectorize -> multimodal tasks
+	var convertResult *types.ReadResult
+	var chunks []types.ParsedChunk
+
 	// 视频文件处理：复用音频处理流程
 	if payload.FilePath != "" && IsVideoType(payload.FileType) {
 		// 检查 ASR 配置
@@ -2838,7 +2842,11 @@ func (s *knowledgeService) ProcessDocument(ctx context.Context, t *asynq.Task) e
 		if err != nil {
 			s.failStage(ctx, knowledge.ID, types.StageDocReader,
 				werrors.ErrCodeDocReaderParseFailed, "failed to get video file", err)
-			return s.failKnowledge(ctx, knowledge, isLastRetry, "failed to get video file: %v", err)
+			knowledge.ParseStatus = "failed"
+			knowledge.ErrorMessage = fmt.Sprintf("failed to get video file: %v", err)
+			knowledge.UpdatedAt = time.Now()
+			s.repo.UpdateKnowledge(ctx, knowledge)
+			return nil
 		}
 		defer fileReader.Close()
 
@@ -2846,7 +2854,11 @@ func (s *knowledgeService) ProcessDocument(ctx context.Context, t *asynq.Task) e
 		if err != nil {
 			s.failStage(ctx, knowledge.ID, types.StageDocReader,
 				werrors.ErrCodeDocReaderParseFailed, "failed to read video file", err)
-			return s.failKnowledge(ctx, knowledge, isLastRetry, "failed to read video file: %v", err)
+			knowledge.ParseStatus = "failed"
+			knowledge.ErrorMessage = fmt.Sprintf("failed to read video file: %v", err)
+			knowledge.UpdatedAt = time.Now()
+			s.repo.UpdateKnowledge(ctx, knowledge)
+			return nil
 		}
 
 		// 构建 ReadResult，标记为音频类型，复用 ASR 处理逻辑
@@ -2862,10 +2874,6 @@ func (s *knowledgeService) ProcessDocument(ctx context.Context, t *asynq.Task) e
 		logger.Infof(ctx, "[Video] Video file loaded, size=%d bytes, will be processed by ASR", len(videoData))
 		// 继续执行后续的 ASR 转写流程（与音频处理相同）
 	}
-
-	// New pipeline: convert -> store images -> chunk -> vectorize -> multimodal tasks
-	var convertResult *types.ReadResult
-	var chunks []types.ParsedChunk
 
 	if payload.FileURL != "" {
 		// file_url import: SSRF re-check (防 DNS 重绑定), download, persist, then delegate to convert()
